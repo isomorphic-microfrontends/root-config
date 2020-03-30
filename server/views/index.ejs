@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Root Config</title>
+  <meta name="importmap-type" content="server" />
+  <script type="systemjs-importmap"><%- importMap %></script>
+  <script src="https://unpkg.com/import-map-overrides/dist/import-map-overrides.js"></script>
+  <script src="https://unpkg.com/systemjs/dist/system.min.js"></script>
+  <script src="https://unpkg.com/systemjs/dist/extras/amd.min.js"></script>
+  <script src="https://unpkg.com/systemjs/dist/extras/named-exports.min.js"></script>
+</head>
+<body>
+  <script>
+    System.import('@isomorphic-mf/root-config');
+  </script>
+  <import-map-overrides-full show-when-local-storage="devtools" dev-libs></import-map-overrides-full>
+</body>
+</html>

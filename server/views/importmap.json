@@ -1,0 +1,6 @@
+{
+  "imports": {
+    "react": "https://unpkg.com/@esm-bundle/react/system/react.production.min.js",
+    "react-dom": "https://unpkg.com/@esm-bundle/react-dom/system/react-dom.production.min.js"
+  }
+}
