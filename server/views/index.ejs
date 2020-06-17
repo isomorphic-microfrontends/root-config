@@ -7,12 +7,15 @@
   <title>Root Config</title>
   <meta name="importmap-type" content="server" />
   <script type="systemjs-importmap"><%- importMap %></script>
-  <script src="https://unpkg.com/import-map-overrides/dist/import-map-overrides.js"></script>
-  <script src="https://unpkg.com/systemjs/dist/system.min.js"></script>
-  <script src="https://unpkg.com/systemjs/dist/extras/amd.min.js"></script>
-  <script src="https://unpkg.com/systemjs/dist/extras/named-exports.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/import-map-overrides/dist/import-map-overrides.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/systemjs/dist/system.js"></script>
 </head>
 <body>
+  <template id="single-spa-layout">
+    <single-spa-router>
+      <application name="@isomorphic-mf/navbar"></application>
+    </single-spa-router>
+  </template>
   <script>
     System.import('@isomorphic-mf/root-config');
   </script>
