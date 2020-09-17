@@ -2,7 +2,7 @@
   "type": "module",
   "scripts": {
     "start": "concurrently -n w: 'yarn:start:*'",
-    "start:node": "nodemon -e js,ejs server/server.js",
+    "start:node": "nodemon -e js,ejs,html --experimental-loader @node-loader/core server/server.js",
     "start:webpack": "webpack-dev-server --mode=development --port 9876 --env.isLocal=true --config webpack.config.cjs",
     "lint": "eslint browser server",
     "test": "jest",
@@ -41,14 +41,23 @@
     "webpack-dev-server": "^3.9.0"
   },
   "dependencies": {
+    "@node-loader/core": "^1.0.2",
+    "@node-loader/http": "^1.0.1",
+    "@node-loader/import-maps": "^1.0.2",
     "ejs": "^3.1.3",
     "express": "^4.17.1",
+    "import-map-overrides": "^2.0.0",
+    "merge2": "^1.4.1",
     "morgan": "^1.10.0",
     "node-fetch": "^2.6.0",
-    "parse5": "^6.0.0",
+    "parse5": "^6.0.1",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "single-spa": "^5.5.3",
-    "single-spa-layout": "^1.0.0-beta.2"
+    "single-spa-layout": "^1.0.0-beta.9",
+    "tailorx": "^5.7.0"
+  },
+  "engines": {
+    "node": ">= 14"
   }
 }

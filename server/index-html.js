@@ -1,75 +1,93 @@
 import { app } from "./app.js";
 import { importMapPromise } from "./importmap.js";
-import ejs from "ejs";
-import path from "path";
-import parse5 from "parse5";
-import fs from "fs";
-import { constructRoutes, matchRoute } from "single-spa-layout";
+import stream from "stream";
+import {
+  constructServerLayout,
+  setResponseHeaders,
+  renderServerResponseBody,
+} from "single-spa-layout/server";
+import merge2 from "merge2";
+import _ from "lodash";
+import { getOverridesFromCookies, applyOverrides } from "import-map-overrides";
 
-const indexTemplate = fs.readFileSync(
-  path.resolve("./server/views/index.ejs"),
-  "utf-8"
-);
-
-app.use("*", (req, res) => {
-  importMapPromise.then((importMap) => {
-    importMap.imports[
-      `@isomorphic-mf/root-config`
-    ] = `http://localhost:9876/root-config.js`;
-    importMap.imports[
-      "@isomorphic-mf/navbar"
-    ] = `http://localhost:8080/isomorphic-mf-navbar.js`;
-
-    const htmlStr = ejs.render(indexTemplate, {
-      importMap: JSON.stringify(importMap, null, 2),
-    });
-
-    const parsedTemplate = parse5.parse(htmlStr);
-    console.log(parse5.serialize(parsedTemplate));
-    const [routerElement, insertPreviousSibling] = findRouterElement(
-      parsedTemplate
-    );
-    const allRoutes = constructRoutes(routerElement);
-    const matchedRoutes = matchRoute(allRoutes, req.url);
-    console.log("matchedRoutes", matchedRoutes);
-    for (let i = matchedRoutes.routes.length - 1; i >= 0; i--) {
-      const route = matchedRoutes.routes[i];
-      if (route.type === "application") {
-        const node = parse5.parseFragment(
-          `<div id="single-spa-application:${route.name}"></div>`
-        ).childNodes[0];
-        console.log(node);
-        insertPreviousSibling(node);
-      }
-    }
-    console.log(parse5.serialize(parsedTemplate));
-    const finalHtml = parse5.serialize(parsedTemplate);
-    res.send(finalHtml);
-  });
+const serverLayout = constructServerLayout({
+  filePath: "server/views/index.html",
 });
 
-function findRouterElement(node) {
-  const childNodes =
-    (node.content && node.content.childNodes) || node.childNodes || [];
-  for (let i = 0; i < childNodes.length; i++) {
-    const child = childNodes[i];
-    const hasChildren =
-      ((child.content && child.content.childNodes) || child.childNodes || [])
-        .length > 0;
-    if (child.nodeName === "single-spa-router") {
-      return [child, insertPreviousSibling];
-    } else if (hasChildren) {
-      const result = findRouterElement(child);
-      if (result) {
-        return result;
-      }
-    }
+app.use("*", (req, res) => {
+  global.nodeLoader.setImportMapPromise(
+    importMapPromise.then((map) => {
+      const clone = _.cloneDeep(map);
 
-    function insertPreviousSibling(newNode) {
-      const container = node.nodeName === "template" ? node.parentNode : node;
-      // console.log('container', container.childNodes)
-      container.childNodes.unshift(newNode);
-      // console.log('container', container.childNodes)
+      const finalMap = applyOverrides(clone, getOverridesFromCookies(req));
+
+      Object.keys(finalMap.imports).forEach((key) => {
+        if (!key.startsWith("@isomorphic-mf")) {
+          delete finalMap.imports[key];
+        }
+      });
+
+      // const finalMap = clone
+      console.log("node", finalMap);
+      return finalMap;
+    })
+  );
+
+  const { bodyStream, applicationProps } = renderServerResponseBody(
+    serverLayout,
+    {
+      urlPath: req.path,
+      renderFragment(name) {
+        const fragStream = new stream.Readable({
+          read() {},
+        });
+        console.log("frag");
+        importMapPromise.then((importMap) => {
+          const browserImportMap = applyOverrides(
+            importMap,
+            getOverridesFromCookies(req)
+          );
+          fragStream.push(
+            `<script type="systemjs-importmap">${JSON.stringify(
+              browserImportMap,
+              null,
+              2
+            )}</script>`
+          );
+          fragStream.push(null);
+        });
+        return fragStream;
+      },
+      renderApplication(props) {
+        if (props.name) {
+          const appStream = merge2();
+          const importSpecifier = props.name + `/server.mjs?ts=${Date.now()}`;
+
+          import(importSpecifier).then((app) => {
+            const byteStream = app.serverRender(props);
+            appStream.add(byteStream);
+          });
+
+          return appStream;
+        } else {
+          return "";
+        }
+      },
     }
-  }
-}
+  );
+
+  setResponseHeaders({
+    res,
+    applicationProps,
+    retrieveApplicationHeaders(props) {
+      return {
+        "x-www-joel": "value",
+      };
+    },
+    mergeHeaders(headers) {
+      return headers.length > 0 ? headers[0] : {};
+    },
+  }).then(() => {
+    bodyStream.pipe(res);
+  });
+});
