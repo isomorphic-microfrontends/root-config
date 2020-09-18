@@ -4,6 +4,7 @@
     "start": "concurrently -n w: 'yarn:start:*'",
     "start:node": "nodemon -e js,ejs,html --experimental-loader @node-loader/core server/server.js",
     "start:webpack": "webpack-dev-server --mode=development --port 9876 --env.isLocal=true --config webpack.config.cjs",
+    "prod-start": "node --experimental-loader @node-loader/core server/server.js",
     "lint": "eslint browser server",
     "test": "jest",
     "prettier": "prettier --write './**'",
