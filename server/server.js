@@ -8,5 +8,9 @@ app.use(morgan("tiny"));
 app.set("view engine", "ejs");
 app.set("views", path.resolve(process.cwd(), "./server/views"));
 
-console.log(`App is hosted at http://localhost:9000/`);
-app.listen(9000);
+if (!process.env.PORT) {
+  console.log(`App is hosted at http://localhost:9000/`);
+}
+
+const port = process.env.PORT || 9000;
+app.listen(port);
