@@ -2,7 +2,7 @@ version: 2
 jobs:
   setup:
     docker:
-      - image: circleci/node:12.13.1
+      - image: circleci/node:14.8.0
     steps:
       - checkout
       - restore_cache:
@@ -16,7 +16,7 @@ jobs:
             - node_modules
   build:
     docker:
-      - image: circleci/node:12.13.1
+      - image: circleci/node:14.8.0
     steps:
       - checkout
       - restore_cache:
