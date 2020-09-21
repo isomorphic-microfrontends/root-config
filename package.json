@@ -1,7 +1,7 @@
 {
   "type": "module",
   "scripts": {
-    "develop": "concurrently -n w: 'yarn:start:*'",
+    "develop": "concurrently -n w: 'yarn:develop:*'",
     "develop:node": "nodemon -e js,ejs,html --experimental-loader @node-loader/core server/server.js",
     "develop:webpack": "webpack-dev-server --mode=development --port 9876 --env.isLocal=true --config webpack.config.cjs",
     "start:node": "node --experimental-loader @node-loader/core server/server.js",
@@ -55,7 +55,8 @@
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "single-spa": "^5.5.3",
-    "single-spa-layout": "^1.0.0-beta.9",
+    "single-spa-layout": "^1.0.0-beta.11",
+    "single-spa-web-server-utils": "^1.14.0",
     "tailorx": "^5.7.0"
   },
   "engines": {
