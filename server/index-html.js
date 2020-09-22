@@ -35,20 +35,21 @@ app.use("*", (req, res, next) => {
           )}</script>`;
         },
         renderApplication(props) {
-          return import(
-            props.name + `/server.mjs?ts=${Date.now()}`
-          ).then((app) => app.serverRender(props));
+          const suffix =
+            process.env.NODE_ENV === "development" ? `?ts=${Date.now()}` : "";
+          return import(props.name + `/server.mjs${suffix}`).then((app) =>
+            app.serverRender(props)
+          );
         },
       }
     );
 
+    // TODO - make this better
     setResponseHeaders({
       res,
       applicationProps,
       retrieveApplicationHeaders(props) {
-        return {
-          "x-www-joel": "value",
-        };
+        return {};
       },
       mergeHeaders(headers) {
         return headers.length > 0 ? headers[0] : {};
