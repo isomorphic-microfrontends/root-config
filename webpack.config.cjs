@@ -4,7 +4,7 @@ const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 module.exports = (env) => ({
   entry: path.resolve(__dirname, "browser/root-config"),
   output: {
-    filename: "root-config.js",
+    filename: "isomorphic-mf-root-config.js",
     libraryTarget: "system",
     path: path.resolve(__dirname, "dist"),
   },

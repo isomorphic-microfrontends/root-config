@@ -1,8 +1,7 @@
 import { app } from "./app.js";
 import {
   constructServerLayout,
-  setResponseHeaders,
-  renderServerResponseBody,
+  sendLayoutHTTPResponse,
 } from "single-spa-layout/server";
 import _ from "lodash";
 import { getImportMaps } from "single-spa-web-server-utils";
@@ -12,7 +11,7 @@ const serverLayout = constructServerLayout({
 });
 
 app.use("*", (req, res, next) => {
-  getImportMaps({
+  const importMapsPromise = getImportMaps({
     url:
       "https://storage.googleapis.com/isomorphic.microfrontends.app/importmap.json",
     nodeKeyFilter(importMapKey) {
@@ -22,41 +21,58 @@ app.use("*", (req, res, next) => {
     allowOverrides: true,
   }).then(({ nodeImportMap, browserImportMap }) => {
     global.nodeLoader.setImportMapPromise(Promise.resolve(nodeImportMap));
-
-    const { bodyStream, applicationProps } = renderServerResponseBody(
-      serverLayout,
-      {
-        urlPath: req.path,
-        renderFragment(name) {
-          return `<script type="systemjs-importmap">${JSON.stringify(
-            browserImportMap,
-            null,
-            2
-          )}</script>`;
-        },
-        renderApplication(props) {
-          const suffix =
-            process.env.NODE_ENV === "development" ? `?ts=${Date.now()}` : "";
-          return import(props.name + `/server.mjs${suffix}`).then((app) =>
-            app.serverRender(props)
-          );
-        },
-      }
-    );
-
-    // TODO - make this better
-    setResponseHeaders({
-      res,
-      applicationProps,
-      retrieveApplicationHeaders(props) {
-        return {};
-      },
-      mergeHeaders(headers) {
-        return headers.length > 0 ? headers[0] : {};
-      },
-    }).then(() => {
-      bodyStream.pipe(res);
-      next();
-    });
+    return { nodeImportMap, browserImportMap };
   });
+
+  const importSuffix =
+    process.env.NODE_ENV === "development" ? `?ts=${Date.now()}` : "";
+
+  const props = {
+    user: {
+      id: 1,
+      name: "Test User",
+    },
+  };
+
+  sendLayoutHTTPResponse({
+    serverLayout,
+    urlPath: req.path,
+    res,
+
+    async renderFragment(name) {
+      const { browserImportMap } = await importMapsPromise;
+      return `<script type="systemjs-importmap">${JSON.stringify(
+        browserImportMap,
+        null,
+        2
+      )}</script>`;
+    },
+    async renderApplication({ appName, propsPromise }) {
+      await importMapsPromise;
+      const [app, props] = await Promise.all([
+        import(appName + `/server.mjs${importSuffix}`),
+        propsPromise,
+      ]);
+      return app.serverRender(props);
+    },
+    async retrieveApplicationHeaders({ appName, propsPromise }) {
+      await importMapsPromise;
+      const [app, props] = await Promise.all([
+        import(appName + `/server.mjs${importSuffix}`),
+        propsPromise,
+      ]);
+      return app.getResponseHeaders(props);
+    },
+    async retrieveProp(propName) {
+      return props[propName];
+    },
+    assembleFinalHeaders(allHeaders) {
+      return Object.assign({}, Object.values(allHeaders));
+    },
+  })
+    .then(next)
+    .catch((err) => {
+      console.error(err);
+      res.status(500).send("A server error occurred");
+    });
 });
