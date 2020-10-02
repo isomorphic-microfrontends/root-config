@@ -11,6 +11,9 @@ const serverLayout = constructServerLayout({
 });
 
 app.use("*", (req, res, next) => {
+  const developmentMode = process.env.NODE_ENV === "development";
+  const importSuffix = developmentMode ? `?ts=${Date.now()}` : "";
+
   const importMapsPromise = getImportMaps({
     url:
       "https://storage.googleapis.com/isomorphic.microfrontends.app/importmap.json",
@@ -21,11 +24,14 @@ app.use("*", (req, res, next) => {
     allowOverrides: true,
   }).then(({ nodeImportMap, browserImportMap }) => {
     global.nodeLoader.setImportMapPromise(Promise.resolve(nodeImportMap));
+    if (developmentMode) {
+      browserImportMap.imports["@isomorphic-mf/root-config"] =
+        "http://localhost:9876/isomorphic-mf-root-config.js";
+      browserImportMap.imports["@isomorphic-mf/root-config/"] =
+        "http://localhost:9876/";
+    }
     return { nodeImportMap, browserImportMap };
   });
-
-  const importSuffix =
-    process.env.NODE_ENV === "development" ? `?ts=${Date.now()}` : "";
 
   const props = {
     user: {
