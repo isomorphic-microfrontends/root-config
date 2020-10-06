@@ -1054,10 +1054,10 @@
   resolved "https://registry.yarnpkg.com/@namecheap/error-extender/-/error-extender-1.1.1.tgz#f72909f1ea7dd6ed4696ada8fb91f020bfce19fc"
   integrity sha512-ck2yVdFW4XuXiz/F4mmOtuLfkDDO4ofTsfifVTQWExk3HtYeygqfjj9vb2Wax8E0aE9M3uF05f5oG1pobwpobQ==
 
-"@node-loader/core@^1.0.2":
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/@node-loader/core/-/core-1.0.2.tgz#c399708e0e6071f36c092d2d78d26f4174be0481"
-  integrity sha512-wUVTGdLsAG9SDhSchdJlaMAoKFAaDkbjsCHUCu79nX1oWkPCrvyX3PJ0ECfBi0HJ7I6+C9YPr2aNpdRJ/kU2pA==
+"@node-loader/core@^1.0.3":
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/@node-loader/core/-/core-1.0.3.tgz#ad7beecd6b01be380c0b867b786029f17dee7ae2"
+  integrity sha512-KaQdtiPRFnRc6rGrfzhtsUwjK9w8/h7sxi/Szd5oN+aWONWzGrvAS5wT1HwOR15KghpzXnA7XYeDC+TPiBKIXw==
   dependencies:
     eslint-config-prettier "^6.11.0"
 
