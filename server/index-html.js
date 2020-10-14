@@ -15,7 +15,8 @@ app.use("*", (req, res, next) => {
   const importSuffix = developmentMode ? `?ts=${Date.now()}` : "";
 
   const importMapsPromise = getImportMaps({
-    url: "http://localhost:7000/import-config",
+    url:
+      "https://storage.googleapis.com/isomorphic.microfrontends.app/importmap.json",
     nodeKeyFilter(importMapKey) {
       return importMapKey.startsWith("@isomorphic-mf");
     },
@@ -48,16 +49,6 @@ app.use("*", (req, res, next) => {
         2
       )}</script>`;
     },
-    "global-styles": async () => {
-      await importMapsPromise;
-      const app = await import(
-        `@isomorphic-mf/navbar` + `/server.mjs${importSuffix}`
-      );
-      return `<style id="jss-server-side">
-              ${app.serverRender(props).sheets}
-              </style>
-              `;
-    },
   };
 
   const renderFragment = (name) => fragments[name]();
@@ -74,7 +65,7 @@ app.use("*", (req, res, next) => {
         import(appName + `/server.mjs${importSuffix}`),
         propsPromise,
       ]);
-      return app.serverRender(props).htmlStream;
+      return app.serverRender(props);
     },
     async retrieveApplicationHeaders({ appName, propsPromise }) {
       await importMapsPromise;
