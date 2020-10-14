@@ -40,12 +40,8 @@ app.use("*", (req, res, next) => {
     },
   };
 
-  sendLayoutHTTPResponse({
-    serverLayout,
-    urlPath: req.path,
-    res,
-
-    async renderFragment(name) {
+  const fragments = {
+    importmap: async () => {
       const { browserImportMap } = await importMapsPromise;
       return `<script type="systemjs-importmap">${JSON.stringify(
         browserImportMap,
@@ -53,6 +49,15 @@ app.use("*", (req, res, next) => {
         2
       )}</script>`;
     },
+  };
+
+  const renderFragment = (name) => fragments[name]();
+
+  sendLayoutHTTPResponse({
+    serverLayout,
+    urlPath: req.path,
+    res,
+    renderFragment,
     async renderApplication({ appName, propsPromise }) {
       await importMapsPromise;
       const [app, props] = await Promise.all([
