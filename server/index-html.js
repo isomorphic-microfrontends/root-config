@@ -60,7 +60,6 @@ app.use("*", (req, res, next) => {
     renderFragment,
     async renderApplication({ appName, propsPromise }) {
       await importMapsPromise;
-      console.log(`APPNAME = ${appName}`);
       const [app, props] = await Promise.all([
         import(appName + `/server.mjs${importSuffix}`),
         propsPromise,
