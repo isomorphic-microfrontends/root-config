@@ -56,7 +56,7 @@
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "single-spa": "^5.5.3",
-    "single-spa-layout": "^1.1.1",
+    "single-spa-layout": "^1.1.2",
     "single-spa-web-server-utils": "^1.14.0",
     "tailorx": "^5.7.0"
   },
