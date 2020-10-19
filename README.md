@@ -4,7 +4,7 @@ This example shows server-rendered microfrontends, using [single-spa](https://si
 
 You can read more about how this works at https://single-spa.js.org/docs/ssr-overview.
 
-The current example references Pokemon APIs for the demo.
+The current example references Pokemon APIs for the demo
 
 # Local Development
 
