@@ -55,7 +55,7 @@ app.use("*", (req, res, next) => {
 
   sendLayoutHTTPResponse({
     serverLayout,
-    urlPath: req.path,
+    urlPath: req.originalUrl,
     res,
     renderFragment,
     async renderApplication({ appName, propsPromise }) {
