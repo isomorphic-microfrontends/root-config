@@ -25,6 +25,12 @@
     <template id="single-spa-layout">
       <single-spa-router>
         <application name="@isomorphic-mf/navbar" props="user"></application>
+        <route path="trainers">
+          <application
+            name="@isomorphic-mf/trainers"
+            props="user"
+          ></application>
+        </route>
         <route path="pokemons">
           <application
             name="@isomorphic-mf/pokemons"

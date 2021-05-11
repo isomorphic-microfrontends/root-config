@@ -5,10 +5,18 @@ import {
 } from "single-spa-layout/server";
 import _ from "lodash";
 import { getImportMaps } from "single-spa-web-server-utils";
+import * as moduleLoadingFetcher from "./fetchers/module-loading-fetcher.js";
+import * as httpFetcher from "./fetchers/http-fetcher.js";
 
 const serverLayout = constructServerLayout({
   filePath: "server/views/index.html",
 });
+
+const fetchers = {
+  "@isomorphic-mf/navbar": moduleLoadingFetcher,
+  "@isomorphic-mf/pokemons": moduleLoadingFetcher,
+  "@isomorphic-mf/trainers": httpFetcher,
+};
 
 app.use("*", (req, res, next) => {
   const developmentMode = process.env.NODE_ENV === "development";
@@ -59,20 +67,30 @@ app.use("*", (req, res, next) => {
     res,
     renderFragment,
     async renderApplication({ appName, propsPromise }) {
-      await importMapsPromise;
-      const [app, props] = await Promise.all([
-        import(appName + `/server.mjs${importSuffix}`),
+      const fetcher = fetchers[appName];
+      if (!fetcher) {
+        throw new Error(`No fetcher defined for application ${appName}`);
+      }
+
+      return fetcher.serverRender({
+        appName,
         propsPromise,
-      ]);
-      return app.serverRender(props);
+        importMapsPromise,
+        importSuffix,
+      });
     },
     async retrieveApplicationHeaders({ appName, propsPromise }) {
-      await importMapsPromise;
-      const [app, props] = await Promise.all([
-        import(appName + `/server.mjs${importSuffix}`),
+      const fetcher = fetchers[appName];
+      if (!fetcher) {
+        throw new Error(`No fetcher defined for application ${appName}`);
+      }
+
+      return fetcher.getResponseHeaders({
+        appName,
         propsPromise,
-      ]);
-      return app.getResponseHeaders(props);
+        importMapsPromise,
+        importSuffix,
+      });
     },
     async retrieveProp(propName) {
       return props[propName];

@@ -5,6 +5,14 @@ import "./static.js";
 import "./index-html.js";
 
 app.use(morgan("tiny"));
+app.use((req, res, next) => {
+  console.log("req", req.path);
+  if (req.path.startsWith("_next")) {
+    res.redirect(`http://localhost:3000${req.path}`);
+  } else {
+    next();
+  }
+});
 app.set("view engine", "ejs");
 app.set("views", path.resolve(process.cwd(), "./server/views"));
 
