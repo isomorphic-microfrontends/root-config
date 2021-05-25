@@ -1,4 +1,4 @@
-import { registerApplication, start } from "single-spa";
+import { addErrorHandler, registerApplication, start } from "single-spa";
 import {
   constructRoutes,
   constructApplications,
@@ -16,3 +16,7 @@ const layoutEngine = constructLayoutEngine({ routes, applications });
 
 applications.forEach(registerApplication);
 start();
+
+addErrorHandler((err) => {
+  console.error(err);
+});
