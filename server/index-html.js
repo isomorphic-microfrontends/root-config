@@ -5,18 +5,13 @@ import {
 } from "single-spa-layout/server";
 import _ from "lodash";
 import { getImportMaps } from "single-spa-web-server-utils";
-import * as moduleLoadingFetcher from "./fetchers/module-loading-fetcher.js";
-import * as httpFetcher from "./fetchers/http-fetcher.js";
+import { ModuleLoadingMicrofrontendRenderer } from "./renderers/module-loading-renderer.js";
+import { NextJSMicrofrontendRenderer } from "./renderers/nextjs-renderer.js";
+import { MicrofrontendOrchestrator } from "./renderers/microfrontend-orchestrator.js";
 
 const serverLayout = constructServerLayout({
   filePath: "server/views/index.html",
 });
-
-const fetchers = {
-  "@isomorphic-mf/navbar": moduleLoadingFetcher,
-  "@isomorphic-mf/pokemons": moduleLoadingFetcher,
-  "@isomorphic-mf/trainers": httpFetcher,
-};
 
 app.use("*", (req, res, next) => {
   const developmentMode = process.env.NODE_ENV === "development";
@@ -61,37 +56,30 @@ app.use("*", (req, res, next) => {
 
   const renderFragment = (name) => fragments[name]();
 
+  const processor = new MicrofrontendOrchestrator();
+
+  processor.setFetcher(
+    "@isomorphic-mf/navbar",
+    new ModuleLoadingMicrofrontendRenderer({ importMapsPromise, importSuffix })
+  );
+  processor.setFetcher(
+    "@isomorphic-mf/pokemons",
+    new ModuleLoadingMicrofrontendRenderer({ importMapsPromise, importSuffix })
+  );
+  processor.setFetcher(
+    "@isomorphic-mf/trainers",
+    new NextJSMicrofrontendRenderer({
+      importMapsPromise,
+    })
+  );
+
   sendLayoutHTTPResponse({
     serverLayout,
     urlPath: req.originalUrl,
     res,
     renderFragment,
-    async renderApplication({ appName, propsPromise }) {
-      const fetcher = fetchers[appName];
-      if (!fetcher) {
-        throw new Error(`No fetcher defined for application ${appName}`);
-      }
-
-      return fetcher.serverRender({
-        appName,
-        propsPromise,
-        importMapsPromise,
-        importSuffix,
-      });
-    },
-    async retrieveApplicationHeaders({ appName, propsPromise }) {
-      const fetcher = fetchers[appName];
-      if (!fetcher) {
-        throw new Error(`No fetcher defined for application ${appName}`);
-      }
-
-      return fetcher.getResponseHeaders({
-        appName,
-        propsPromise,
-        importMapsPromise,
-        importSuffix,
-      });
-    },
+    renderApplication: processor.renderApplication,
+    retrieveApplicationHeaders: processor.retrieveApplicationHeaders,
     async retrieveProp(propName) {
       return props[propName];
     },

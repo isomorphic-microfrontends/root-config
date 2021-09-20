@@ -2,6 +2,7 @@ import path from "path";
 import morgan from "morgan";
 import { app } from "./app.js";
 import "./static.js";
+import "./nextjs-manifest.js";
 import "./index-html.js";
 
 app.use(morgan("tiny"));
