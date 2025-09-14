@@ -3,20 +3,18 @@ import {
   constructServerLayout,
   sendLayoutHTTPResponse,
 } from "single-spa-layout/server";
-import _ from "lodash";
 import { getImportMaps } from "single-spa-web-server-utils";
 
 const serverLayout = constructServerLayout({
   filePath: "server/views/index.html",
 });
 
-app.use("*", (req, res, next) => {
+app.get("*", (req, res, next) => {
   const developmentMode = process.env.NODE_ENV === "development";
   const importSuffix = developmentMode ? `?ts=${Date.now()}` : "";
 
   const importMapsPromise = getImportMaps({
-    url:
-      "https://storage.googleapis.com/isomorphic.microfrontends.app/importmap.json",
+    url: "https://storage.googleapis.com/isomorphic.microfrontends.app/importmap.json",
     nodeKeyFilter(importMapKey) {
       return importMapKey.startsWith("@isomorphic-mf");
     },
@@ -43,21 +41,21 @@ app.use("*", (req, res, next) => {
   const fragments = {
     importmap: async () => {
       const { browserImportMap } = await importMapsPromise;
-      return `<script type="systemjs-importmap">${JSON.stringify(
+      return `<script type="injector-importmap">${JSON.stringify(
         browserImportMap,
         null,
-        2
+        2,
       )}</script>`;
     },
   };
-
-  const renderFragment = (name) => fragments[name]();
 
   sendLayoutHTTPResponse({
     serverLayout,
     urlPath: req.originalUrl,
     res,
-    renderFragment,
+    renderFragment(name) {
+      return fragments[name]();
+    },
     async renderApplication({ appName, propsPromise }) {
       await importMapsPromise;
       const [app, props] = await Promise.all([

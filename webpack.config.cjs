@@ -8,23 +8,12 @@ module.exports = (env) => ({
     libraryTarget: "system",
     path: path.resolve(__dirname, "dist"),
   },
-  devtool: "sourcemap",
-  module: {
-    rules: [
-      { parser: { system: false } },
-      {
-        test: /\.js$/,
-        exclude: /node_modules/,
-        use: [{ loader: "babel-loader" }],
-      },
-    ],
-  },
+  devtool: "source-map",
   devServer: {
     historyApiFallback: true,
     headers: {
       "Access-Control-Allow-Origin": "*",
     },
-    disableHostCheck: true,
   },
   plugins: [new CleanWebpackPlugin()],
   externals: ["single-spa", /^@isomorphic-mf\/.+$/],
